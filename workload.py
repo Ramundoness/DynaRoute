@@ -3,17 +3,22 @@ from message import Message
 
 class Workload:
     def __init__(self, num_messages, num_nodes) -> None:
-        self.num_message = num_messages
+        self.num_messages = num_messages
         self.num_nodes = num_nodes
         self.messages = self.generate_messages()
     
     def generate_messages(self):
         '''Generates messages with random start and destination.'''
+        messages = []
         for i in range(self.num_messages):
             message = Message(
                 id=i, 
-                start_id=random.randint(0, self.num_nodes),
-                destination_id=random.randint(0, self.num_nodes)
+                start_id=random.randint(0, self.num_nodes-1),
+                destination_id=random.randint(0, self.num_nodes-1)
             )
-            self.messages.append(message)
+            messages.append(message)
+        return messages
+    
+    def num_delivered(self):
+        return sum(message.delivered for message in self.messages)
     

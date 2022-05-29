@@ -6,7 +6,7 @@ import numpy as np
 class Topology(ABC):
     '''Abstract network topology class.'''
 
-    def __init__(self, num_nodes, density=0.1, volatility=0.05) -> None:
+    def __init__(self, num_nodes, density=0.5, volatility=0.5) -> None:
         '''Initializes Topology class. 
         
         Represents the ground-truth topology of the network.
@@ -36,20 +36,25 @@ class Topology(ABC):
 
 
 class RandomTopology(Topology):
-    def __init__(self, num_nodes, density=0.1, volatility=0.05) -> None:
+    def __init__(self, num_nodes, density=0.1, volatility=0.1) -> None:
         super().__init__(num_nodes, density, volatility)
     
     def initialize(self):
-        # Initializes network as an Erdős–Rényi random graph
+        # Initializes network as an Erdős–Rényi-like random graph
         # https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model
 
         # NOTE: because we are doing the logical or, the edge probability is greater than self.density
         # (In particular, it is 1 - (1-density)^2)
-        self.topology = self.random_topology(self.density)
+        return self.random_topology(self.density)
     
     def random_topology(self, p):
         topology = np.random.rand(self.num_nodes, self.num_nodes) < p
-        topology = np.logical_or(topology, topology.T)
+        topology = topology | topology.T
+
+        # This is a bit of a hack to ensure nodes always have one neighbor (themselves)
+        # TODO: make nodes not connected to themselves + modify node algorithm
+        # to place messages in the node's inbox iff they have no neighbors.
+        topology = topology | np.eye(self.num_nodes, self.num_nodes).astype(np.bool)
         return topology
 
     
