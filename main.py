@@ -54,4 +54,9 @@ Node class
     (i.e. may be broadcasted or sent to destination...we decide)
 - has a position/ coordinate
 
+Notes from Cooper and Alex:
+- use outbox so a message can not be over-propagated during a single tick
+- since topology can change between ticks, nodes must verify they are still "connected" with receiver before sending
+    - this is a fair assumption, as it would be akin to a system that requires an ack for message receive. \
+- extend node class to handle different algorithms 
 '''
