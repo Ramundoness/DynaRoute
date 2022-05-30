@@ -20,9 +20,9 @@ class NetworkSimulator:
     
     '''
   
-    def __init__(self, node_class: Type[Node], topology_class: Type[Topology], num_nodes) -> None:
+    def __init__(self, node_class: Type[Node], topology: Topology, num_nodes) -> None:
         self.nodelist = [node_class(i) for i in range(num_nodes)]
-        self.topology = topology_class(num_nodes)
+        self.topology = topology
         self.current_workload = None
     
     def initialize_new_workload(self, workload) -> None:
