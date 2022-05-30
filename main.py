@@ -7,10 +7,15 @@ You can override any arguments in SimpleArgumentParser like this:
 
 from network_simulator import NetworkSimulator
 from node import NodeNaiveBFS, RandomForwardNode
-from topology import RandomTopology
+from topology import RandomTopology, RandomGeoTopology
 from workload import Workload
 
 from tap import Tap
+
+TOPOLOGY_CLASS_DICT = {
+    'random': RandomTopology,
+    'geo': RandomGeoTopology
+}
 
 def main(args):
 
@@ -20,7 +25,9 @@ def main(args):
 
     node_class = RandomForwardNode
     workload_class = Workload
-    topology = RandomTopology(num_nodes, args.density, args.volatility)
+
+    topology_class = TOPOLOGY_CLASS_DICT[args.topology]
+    topology = topology_class(num_nodes, args.density, args.volatility)
     
     simulator = NetworkSimulator(node_class, topology, num_nodes)
     workload = workload_class(num_messages, num_nodes)
@@ -38,6 +45,8 @@ class SimpleArgumentParser(Tap):
 
     density: float = 0.5  # Density of the network topology. Higher = more connectivity.
     volatility: float = 0.5  # Volatility of the network topology. Higher = changes more frequently.
+
+    topology: str = 'random'  # Which topology class to use (key in TOPOLOGY_CLASS_DICT)
 
 
 if __name__ == "__main__":

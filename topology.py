@@ -6,7 +6,7 @@ import numpy as np
 class Topology(ABC):
     '''Abstract network topology class.'''
 
-    def __init__(self, num_nodes, density=0.5, volatility=0.5) -> None:
+    def __init__(self, num_nodes, density, volatility) -> None:
         '''Initializes Topology class. 
         
         Represents the ground-truth topology of the network.
@@ -16,8 +16,10 @@ class Topology(ABC):
         
         Args:
             num_nodes: number of nodes in the network
-            density: probability any two nodes are connected.
-            volatility: probability the connection changes between any two nodes.
+            density: float in [0,1] that controls how many nodes are connected. 
+                0 = none, 1 = all.
+            volatility: float in [0,1] that controls how often the connection changes 
+                between any two nodes. 0 = no change, 1 = maximum change
         '''
         self.num_nodes = num_nodes
         self.density = density
@@ -36,7 +38,7 @@ class Topology(ABC):
 
 
 class RandomTopology(Topology):
-    def __init__(self, num_nodes, density=0.1, volatility=0.1) -> None:
+    def __init__(self, num_nodes, density, volatility) -> None:
         super().__init__(num_nodes, density, volatility)
     
     def initialize(self):
@@ -66,3 +68,44 @@ class RandomTopology(Topology):
         # some fraction of the time (dependent on network volatility)
         self.topology = np.where(use_alternate, alternate_topology, self.topology)
     
+class RandomGeoTopology(Topology):
+    '''Connect users based on their location on a grid.
+    
+    Args:
+        - density: controls connectivity based on distance
+        - volatility: controls how quickly the nodes move (influencing their connectivity)
+
+    TODO: visualize this to make sure it's implemented correctly
+    '''
+    
+    def __init__(self, num_nodes, density, volatility) -> None:
+        super().__init__(num_nodes, density, volatility)
+    
+    def topology_from_grid_locations(self, grid_locations):
+        '''Connects nodes if their distance is within self.density * max_distance.'''
+
+        # Returns ndarray of size [self.num_nodes, self.num_nodes]
+        node_distances = self.get_2d_distances(self.grid_locations)
+        max_distance = np.sqrt(2)  # Max distance on 1x1 grid is sqrt(2)
+        normalized_distances = node_distances / max_distance
+        return normalized_distances < self.density
+    
+    def random_2d_grid_locations(self, num_nodes):
+        return np.random.uniform(0, 1, size=(num_nodes, 2))
+
+    def get_2d_distances(self, grid_locations):
+        # This works because None adds an extra dimension, which numpy broadcasts across
+        return np.linalg.norm(grid_locations[:, None, :] - grid_locations[None, :, :], axis=-1)
+
+    def initialize(self):
+        ''' Place users uniformly on a 2D grid, then connects them if they are within a certain distance'''
+
+        # Returns ndarray of size [self.num_nodes, 2]
+        self.grid_locations = self.random_2d_grid_locations(self.num_nodes)
+        return self.topology_from_grid_locations(self.grid_locations)
+
+    def step(self):
+        # Mix grid locations with alternate random grid locations with weight based on self.volatility.
+        alternate_grid_locations = self.random_2d_grid_locations(self.num_nodes)
+        self.grid_locations = (1 - self.volatility) * self.grid_locations + self.volatility * alternate_grid_locations
+        self.topology = self.topology_from_grid_locations(self.grid_locations)
