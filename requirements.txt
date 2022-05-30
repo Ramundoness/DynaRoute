@@ -1,0 +1,2 @@
+typed_argument_parser==1.7.2
+numpy==1.22.4
