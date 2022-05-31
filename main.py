@@ -5,6 +5,8 @@ You can override any arguments in SimpleArgumentParser like this:
 '''
 
 
+import random
+import numpy as np
 from network_simulator import NetworkSimulator
 from node import NodeNaiveBFS, RandomForwardNode
 from topology import RandomTopology, RandomGeoTopology
@@ -18,12 +20,16 @@ TOPOLOGY_CLASS_DICT = {
 }
 
 def main(args):
+    # TODO: remove for final
+    # set random seeds for deterministic outputs
+    random.seed(a=43)
+    np.random.seed(seed=43)
 
     num_nodes = args.num_nodes
     num_messages = args.num_messages
     max_steps = args.num_steps
 
-    node_class = RandomForwardNode
+    node_class = NodeNaiveBFS
     workload_class = Workload
 
     topology_class = TOPOLOGY_CLASS_DICT[args.topology]

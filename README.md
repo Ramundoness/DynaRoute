@@ -58,4 +58,10 @@ Notes from Cooper and Alex:
 - since topology can change between ticks, nodes must verify they are still "connected" with receiver before sending
     - this is a fair assumption, as it would be akin to a system that requires an ack for message receive. \
 - extend node class to handle different algorithms 
+
+Notes from George and Raymond:
+- TODO: implement some sort of "ack" packet that gets broadcasted to all nodes once a message has been delivered
+    - this prevents packets from still unnecessarily propagating through the network
+- we retain some memory per node of which messages it's already seen, preventing the dual message delivery issue
+    - i.e. A -> B; A -> C -> B
 '''

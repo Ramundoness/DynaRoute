@@ -4,6 +4,7 @@ from typing import List, Type
 from node import Node # choose your Node
 from workload import Workload
 from message import Message
+from packet import Packet
 from topology import Topology  # choose your topology
 
 
@@ -30,7 +31,8 @@ class NetworkSimulator:
         print(f'Initializing workload with {len(workload.messages)} messages.')
         self.current_workload = workload
         for message in workload.messages:
-            self.nodelist[message.start].inbox.append(message)
+            packet = Packet(message)
+            self.nodelist[message.start].inbox.append(packet)
         
     def run_workload(self, max_steps=100):
         print(f'Running workload for {max_steps} steps.')
@@ -41,6 +43,7 @@ class NetworkSimulator:
     def compute_workload_cost(self):
         print("Computing workload cost.")
         workload_cost = 0
+        # TODO: calculate cost with packets
         for message in self.current_workload.messages:
             workload_cost += message.total_cost
         return workload_cost
@@ -58,21 +61,21 @@ class NetworkSimulator:
             self.outbox_all_messages(node)
     
     def run_one_node_step(self, node: Node):
-        for message in node.inbox:
+        for packet in node.inbox:
             # Node handles this logic, including:
             # - Deciding which node to send the message to
             # - Retries after failed sends
             # - Computing the cost of each send
             # - Marking messages as delivered
-            node.handle_message(message, self.topology)
+            node.handle_packet(packet, self.topology)
         # Clear inbox after loop 
         node.inbox = []
         return
 
     def outbox_all_messages(self, node: Node):
-        for message, next_hop_id in node.outbox:
+        for packet, next_hop_id in node.outbox:
             # Place message to next hop's inbox
-            self.nodelist[next_hop_id].inbox.append(message)
+            self.nodelist[next_hop_id].inbox.append(packet)
         # Then remove from outbox
         node.outbox = []
         return 

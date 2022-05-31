@@ -4,7 +4,10 @@ from typing import List, Iterator, Tuple
 import random
 
 from message import Message
+from packet import Packet
 from topology import Topology
+
+import copy
 
 class Node(ABC):
     '''Node class. Handles receiving and sending of messages for individual nodes.
@@ -19,8 +22,8 @@ class Node(ABC):
 
     
     """
-    Function: handle_message
-        Wrapper to handle node forwarding messages to other nodes.
+    Function: handle_packet
+        Wrapper to handle node forwarding packets to other nodes.
 
         - checks if self is destination
             - returns -1
@@ -30,8 +33,10 @@ class Node(ABC):
     
         returns number of forwards. >0 if forwards occur. 0 if no forwards occur. -1 if self is destination
     """
-    def handle_message(self, msg: Message, topology: Topology) -> int: 
-        
+    def handle_packet(self, packet: Packet, topology: Topology) -> int: 
+        # prevent packets from looping
+        packet.nodes_visited.append(self)
+        msg = packet.message
         # check if self is destination
         destination = msg.destination_id
         if destination == self.self_id: 
@@ -45,8 +50,8 @@ class Node(ABC):
         # DO ALGORITHM to send messages according to logic 
             # who to send to
             # increment cost
-        for forward_msg, forward_node in self.sending_algorithm(msg, neighbors):
-            self.outbox.append((forward_msg, forward_node))
+        for forward_packet, forward_node in self.sending_algorithm(packet, neighbors):
+            self.outbox.append((forward_packet, forward_node))
             forwards += 1
         
         return forwards
@@ -71,17 +76,28 @@ class Node(ABC):
 
 
 class NodeNaiveBFS(Node):
-    def __init__(self, self_id, inbox: List[Message] = [], outbox: List[Tuple[Message, Node]] = []) -> None:
+    def __init__(self, self_id, inbox: List[Packet] = [], outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
         self.inbox = inbox  # messages sent to node
         self.outbox = outbox  # only put in outbox if "successful send"
+        self.seen_messages = set() # previously seen messages
 
-    def sending_algorithm(self, message: Message, neighbors: List[Node]) -> Iterator[Tuple[Node, Message]]: 
+    def sending_algorithm(self, packet: Packet, neighbors: List[Node]) -> Iterator[Tuple[Node, Packet]]: 
+        # maintain a memory of past messages the node has seen to prevent a packet from going to 
+        # i.e. A -> B; A -> C -> B
+        if packet.message in self.seen_messages:
+            return
+        self.seen_messages.add(packet.message)
+        
         for forward_node in neighbors: 
-            forward_msg = message
-            forward_msg.total_cost += 1
-            forward_msg.nodes_visited.append(self.self_id)
-            yield (forward_msg, forward_node)
+            # don't forward packets to nodes that we've already visited
+            if forward_node in packet.nodes_visited:
+                continue
+            # construct a new copy of a packet
+            forward_packet = copy.copy(packet)
+            forward_packet.message.total_cost += 1
+            forward_packet.nodes_visited.append(self.self_id)
+            yield (forward_packet, forward_node)
         return
 
 
@@ -89,13 +105,12 @@ class RandomForwardNode(Node):
     def __init__(self, self_id):
         super().__init__(self_id)
 
-    def sending_algorithm(self, message: Message, neighbors: List[Node]) -> Iterator[Tuple[Node, Message]]:
+    def sending_algorithm(self, packet: Packet, neighbors: List[Node]) -> Iterator[Tuple[Node, Packet]]:
         if len(neighbors) == 0:
             return
         else:
             forward_node = random.choice(neighbors)
-            forward_msg = message
-            forward_msg.total_cost += 1
-            forward_msg.nodes_visited.append(self.self_id)
-            yield (forward_msg, forward_node)
+            packet.message.total_cost += 1
+            packet.nodes_visited.append(self.self_id)
+            yield (packet, forward_node)
         return
