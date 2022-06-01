@@ -19,7 +19,8 @@ class Node(ABC):
         self.inbox  = []     #  messages sent to node
         self.outbox = []    #  only put in outbox if "successful send"
         self.self_id = self_id  #  `self_id` is position of node in parent NetworkSimulator's nodelist. Used for identification  
-
+        self.avg_num_packets_inbox = 0
+        self.steps = 0
     
     """
     Function: handle_packet
@@ -94,7 +95,9 @@ class NodeNaiveBFS(Node):
             if forward_node in packet.nodes_visited:
                 continue
             # construct a new copy of a packet
-            forward_packet = copy.copy(packet)
+            # forward_packet = copy.copy(packet)
+            forward_packet = Packet(packet.message)
+            forward_packet.nodes_visited = packet.nodes_visited
             forward_packet.message.total_cost += 1
             forward_packet.nodes_visited.append(self.self_id)
             yield (forward_packet, forward_node)
@@ -109,6 +112,8 @@ class RandomForwardNode(Node):
         if len(neighbors) == 0:
             return
         else:
+            # TODO: try forwarding the node to more than neighbor
+            # i.e. k=2 or k=3
             forward_node = random.choice(neighbors)
             packet.message.total_cost += 1
             packet.nodes_visited.append(self.self_id)

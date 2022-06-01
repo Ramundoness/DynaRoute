@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from random import random
-
+import networkx as nx
 import numpy as np
 
 class Topology(ABC):
@@ -35,6 +35,18 @@ class Topology(ABC):
     def step():
         '''Update the network based on self.volatility.'''
         pass
+
+    def display(self):
+        G = nx.Graph()
+        G.add_nodes_from(self.topology[0])
+        edges = []
+        for i,row in enumerate(self.topology):
+            for j,val in enumerate(row):
+                if i>j: break
+                if val: edges.append((i,j))
+        G.add_edges_from(edges)
+        nx.multipartite_layout(G)
+        return
 
 
 class RandomTopology(Topology):
