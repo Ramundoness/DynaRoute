@@ -89,8 +89,8 @@ class Node(ABC):
 class NodeNaiveBFS(Node):
     def __init__(self, self_id, inbox: List[Packet] = [], outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
-        self.inbox = inbox  # messages sent to node
-        self.outbox = outbox  # only put in outbox if "successful send"
+        self.inbox = inbox[:]  # messages sent to node
+        self.outbox = outbox[:]  # only put in outbox if "successful send"
         self.seen_messages = set() # previously seen messages
 
     def sending_algorithm(self, packet: Packet, neighbors: List[Node]) -> Iterator[Tuple[Node, Packet]]:
@@ -101,8 +101,6 @@ class NodeNaiveBFS(Node):
         self.seen_messages.add(packet.message)
 
         for forward_node in neighbors:
-            # TODO remove this
-            #print(f"Node {self.self_id} connects to Node {forward_node}")
             # don't forward packets to nodes that we've already visited
             if forward_node in packet.nodes_visited:
                 continue
@@ -140,8 +138,8 @@ This prevents packets from being routed forever.
 class NodeBFSWithTTL(Node):
     def __init__(self, self_id, inbox: List[Packet] = [], outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
-        self.inbox = inbox  # messages sent to node
-        self.outbox = outbox  # only put in outbox if "successful send"
+        self.inbox = inbox[:]  # messages sent to node
+        self.outbox = outbox[:]  # only put in outbox if "successful send"
         self.seen_messages = set() # previously seen messages
 
     def sending_algorithm(self, packet: Packet, neighbors: List[Node]) -> Iterator[Tuple[Node, Packet]]:
@@ -177,8 +175,8 @@ class NodeBFSWithTTLEarlySplit(Node):
                  inbox: List[Packet] = [],
                  outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
-        self.inbox = inbox  # messages sent to node
-        self.outbox = outbox  # only put in outbox if "successful send"
+        self.inbox = inbox[:]  # messages sent to node
+        self.outbox = outbox[:]  # only put in outbox if "successful send"
         self.seen_messages = set() # previously seen messages
         self.workload = workload
 
@@ -222,8 +220,8 @@ class NodeBFSWithTTLLateSplit(Node):
                  inbox: List[Packet] = [],
                  outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
-        self.inbox = inbox  # messages sent to node
-        self.outbox = outbox  # only put in outbox if "successful send"
+        self.inbox = inbox[:]  # messages sent to node
+        self.outbox = outbox[:]  # only put in outbox if "successful send"
         self.seen_messages = set() # previously seen messages
         self.workload = workload
 
