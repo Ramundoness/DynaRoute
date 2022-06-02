@@ -71,6 +71,7 @@ class SimpleArgumentParser(Tap):
     metric = 'fraction_delivered'  # Which metri
 
     graphics: bool = False # whether to display graphics
+    heatmap: bool = False # whether to run multiple trials and construct a heatmap
     
     verbose: bool = False # display more complex metrics
 
@@ -78,9 +79,13 @@ class SimpleArgumentParser(Tap):
 if __name__ == "__main__":
     args = SimpleArgumentParser().parse_args()
 
+    if not args.heatmap:
+       run_one_trial(args)
+       quit()
+
     results = []
-    n = 0
-    b = 2.0
+    n = 10
+    b = 1.8
     for density in b ** np.arange(-n, 1):
         for volatility in b ** np.arange(-n, 1):
             args.density = density
@@ -99,7 +104,7 @@ if __name__ == "__main__":
     else:
         sns.heatmap(pivot)
     plt.legend()
-    title = f"metric={args.metric}, steps={args.num_steps}, algorithm={args.alg}, topology={args.topology}"
+    title = f'metric={args.metric}, steps={args.num_steps}, alg={args.alg}, topology={args.topology}, n={n}, b={b}'
     plt.title(title)
-    plt.savefig(f'/Users/alextamkin/Desktop/cs244b_figs/{title}')
+    plt.savefig(f'/Users/alextamkin/Desktop/cs244b_figs/{title}.png')
     plt.show()
