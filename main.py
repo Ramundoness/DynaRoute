@@ -28,7 +28,8 @@ TOPOLOGY_CLASS_DICT = {
 NODE_ALGORITHM_CLASS_DICT = {
     'random': node.RandomForwardNode,
     'bfs': node.NodeNaiveBFS,
-    'bfs-ttl': node.NodeBFSWithTTL
+    'bfs-ttl': node.NodeBFSWithTTL,
+    'bfs-ttl-early-split': node.NodeBFSWithTTLEarlySplit
 }
 
 def run_one_trial(args):
@@ -62,7 +63,7 @@ class SimpleArgumentParser(Tap):
     num_nodes: int = 100  # Number of nodes in the network
     num_messages: int = 1000  # Number of messages in the workload
     num_steps: int = 250  # Number of steps to run the simulation for
-    ttl: int = 100 # ttl for a message. Has no effect on some routing algorithms
+    ttl: int = None # ttl for a message. Has no effect on some routing algorithms
 
     # Currently this is overwritten
     density: float = 0.5  # Density of the network topology. Higher = more connectivity.
@@ -85,6 +86,7 @@ if __name__ == "__main__":
     n = 0
     b = 2.0
     for density in b ** np.arange(-n, 1):
+        print(f"Density: {density}")
         for volatility in b ** np.arange(-n, 1):
             args.density = density
             args.volatility = volatility
@@ -102,7 +104,7 @@ if __name__ == "__main__":
     else:
         sns.heatmap(pivot)
     plt.legend()
-    title = f"metric={args.metric}, steps={args.num_steps}, algorithm={args.alg}, topology={args.topology}"
+    title = f'metric={args.metric}, steps={args.num_steps}, alg={args.alg}, topology={args.topology}, n={n}, b={b}'
     plt.title(title)
-    plt.savefig(f'{title}')
+    plt.savefig(f'{title}.png')
     plt.show()

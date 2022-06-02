@@ -32,6 +32,8 @@ class NetworkSimulator:
         '''Adds all messages to the inbox of their respective start nodes.'''
         print(f'Initializing workload with {len(workload.messages)} messages.')
         self.current_workload = workload
+        for node in self.nodelist:
+            node.set_workload(workload)
         for message in workload.messages:
             packet = Packet(message, workload.ttl)
             self.nodelist[message.start].inbox.append(packet)

@@ -2,11 +2,14 @@ import random
 from message import Message
 
 class Workload:
-    def __init__(self, num_messages, num_nodes, ttl) -> None:
+    def __init__(self, num_messages, num_nodes, ttl=None) -> None:
         self.num_messages = num_messages
         self.num_nodes = num_nodes
         self.messages = self.generate_messages()
-        self.ttl = ttl
+        if ttl == None:
+            self.ttl = num_nodes
+        else:
+            self.ttl = ttl
     
     def generate_messages(self):
         '''Generates messages with random start and destination.'''
