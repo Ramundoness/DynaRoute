@@ -76,15 +76,20 @@ class SimpleArgumentParser(Tap):
 
     graphics: bool = False # whether to display graphics
 
+    heatmap: bool = False # whether to run multiple trials and construct a heatmap
     verbose: bool = False # display more complex metrics
 
 
 if __name__ == "__main__":
     args = SimpleArgumentParser().parse_args()
 
+    if not args.heatmap:
+       run_one_trial(args)
+       quit()
+
     results = []
-    n = 0
-    b = 2.0
+    n = 10
+    b = 1.8
     for density in b ** np.arange(-n, 1):
         print(f"Density: {density}")
         for volatility in b ** np.arange(-n, 1):
