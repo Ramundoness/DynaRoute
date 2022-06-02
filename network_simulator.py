@@ -33,7 +33,7 @@ class NetworkSimulator:
         print(f'Initializing workload with {len(workload.messages)} messages.')
         self.current_workload = workload
         for message in workload.messages:
-            packet = Packet(message)
+            packet = Packet(message, workload.ttl)
             self.nodelist[message.start].inbox.append(packet)
         
     def run_workload(self, max_steps=100, graphics: bool=False):

@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 from network_simulator import NetworkSimulator
-from node import NodeNaiveBFS, RandomForwardNode
+import node
 from topology import RandomTopology, RandomGeoTopology
 from workload import Workload
 
@@ -26,8 +26,9 @@ TOPOLOGY_CLASS_DICT = {
 }
 
 NODE_ALGORITHM_CLASS_DICT = {
-    'random': RandomForwardNode,
-    'bfs': NodeNaiveBFS
+    'random': node.RandomForwardNode,
+    'bfs': node.NodeNaiveBFS,
+    'bfs-ttl': node.NodeBFSWithTTL
 }
 
 def run_one_trial(args):
@@ -39,15 +40,16 @@ def run_one_trial(args):
     num_nodes = args.num_nodes
     num_messages = args.num_messages
     max_steps = args.num_steps
+    ttl = args.ttl
 
     node_class = NODE_ALGORITHM_CLASS_DICT[args.alg]
     workload_class = Workload
 
     topology_class = TOPOLOGY_CLASS_DICT[args.topology]
     topology = topology_class(num_nodes, args.density, args.volatility)
-    
+
     simulator = NetworkSimulator(node_class, topology, num_nodes)
-    workload = workload_class(num_messages, num_nodes)
+    workload = workload_class(num_messages, num_nodes, ttl)
 
     simulator.initialize_new_workload(workload)
     simulator.run_workload(max_steps, args.graphics)
@@ -60,6 +62,7 @@ class SimpleArgumentParser(Tap):
     num_nodes: int = 100  # Number of nodes in the network
     num_messages: int = 1000  # Number of messages in the workload
     num_steps: int = 250  # Number of steps to run the simulation for
+    ttl: int = 100 # ttl for a message. Has no effect on some routing algorithms
 
     # Currently this is overwritten
     density: float = 0.5  # Density of the network topology. Higher = more connectivity.
@@ -71,7 +74,7 @@ class SimpleArgumentParser(Tap):
     metric = 'fraction_delivered'  # Which metri
 
     graphics: bool = False # whether to display graphics
-    
+
     verbose: bool = False # display more complex metrics
 
 
@@ -101,5 +104,5 @@ if __name__ == "__main__":
     plt.legend()
     title = f"metric={args.metric}, steps={args.num_steps}, algorithm={args.alg}, topology={args.topology}"
     plt.title(title)
-    plt.savefig(f'/Users/alextamkin/Desktop/cs244b_figs/{title}')
+    plt.savefig(f'{title}')
     plt.show()
