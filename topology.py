@@ -9,7 +9,7 @@ import numpy as np
 # plt.rcParams["figure.figsize"] = [1, 1]
 # plt.rcParams["figure.autolayout"] = True
 
-DISPLAY_DEBUG = True
+DISPLAY_DEBUG = False
 
 class Topology(ABC):
     '''Abstract network topology class.'''
@@ -122,7 +122,7 @@ class RandomGeoTopology(Topology):
         - density: controls connectivity based on distance
         - volatility: controls how quickly the nodes move (influencing their connectivity)
 
-    TODO: visualize this to make sure it's implemented correctly
+    TODO: visualize this to make sure it's implemented correctly !DONE!
     '''
     
     def __init__(self, num_nodes, density, volatility) -> None:
@@ -154,7 +154,13 @@ class RandomGeoTopology(Topology):
     def step(self):
         # Mix grid locations with alternate random grid locations with weight based on self.volatility.
         alternate_grid_locations = self.random_2d_grid_locations(self.num_nodes)
-        self.grid_locations = (1 - self.volatility) * self.grid_locations + self.volatility * alternate_grid_locations
+        # self.grid_locations = (1) * self.grid_locations + self.volatility * alternate_grid_locations
+        alternate_grid_locations -= 0.5
+        self.grid_locations = self.grid_locations + self.volatility * (alternate_grid_locations / np.linalg.norm(alternate_grid_locations, ord=2, axis=-1, keepdims=True))
+        # reflecting across 0 & 1 boundaries to prevent run-away nodes
+        self.grid_locations -= 2 * np.maximum(self.grid_locations-1, 0)
+        self.grid_locations -= 2 * np.minimum(self.grid_locations, 0)
+        
         self.topology = self.topology_from_grid_locations(self.grid_locations)
 
     def display(self):
