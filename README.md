@@ -1,67 +1,49 @@
-NEXT STEPS
-- create simple "Hello world" version of app
-- ways to generate networks (i.e. clustered of locality) -> 
-- metrics/ analytics to gauge effectiveness of network/ node config
-- visualization of packets going through nodes, nodes dropping, etc
+A Python network simulator to design, benchmark, and visualize routing algorithms for dynamic geospatial networks.
 
+## Getting Started
+To install the Python library dependencies, run:
+```
+pip3 install requirements.txt
+```
+Note that we are using Python v3.9 (other versions may be unsupported).
 
-Cool ideas
-- nodes are moving, have a velocity
-- when tick is called, goes to new position -> if going towards wall, bounces at an angle
+## Usage
+Use the below command to run the network routing simulator under default conditions:
+```
+python3 main.py
+```
 
+This uses the default args of:
+- `num_nodes = 100`
+- `num_messages = 1000`
+- `num_steps = 250`
+- `ttl = None`
+- `density = 0.5`
+- `volatility = 0.5`
+- `topology = 'random'`
+- `alg = 'random'`
+- `metric = ['fraction_delivered']`
+- `graphics = False`
+- `heatmap = False`
+- `verbose = False`
 
-Generating a network
-- Under particular params (i.e. specify locations of nodes)
-- generate a random network
--> geo-clustered together i.e. randomly pick 10 points, nodes are gaussian-ally distributed at those points
+You can override any args like this:
+```
+python3 main.py --num_nodes=50 --density=0.1 --volatility=0.2
+```
 
-
-Methods to implement
-- for the originator of the message (aka the sender)
-    -> sender node calls 'receive_message'
-
-- tick method (global/ network)
-    global (network) calls tick -> propagates to the nodes themselves, which then call their own versions of tick
-    - network first needs to update nodes that die/ are added/ edges are dropped
-        - note that nodes can fail *at any time* (gracefully or unexpectedly)
-        -> because we need to support messages passing through nodes simultaneously, rather than chronologically
-        -> looks through data structure, picks appropriate ones, then sends message
-
-- tick method (individual nodes)
-    1. tick called on me, fetch current timestamp from a global variable in network and store as var
-    2. examine msgs in my data structure -> ignore timestamps >= current timestamp, and call the next node's
-    receive_message method (think about whether more than one call is allowed)
-    3. that node stores message in their data structure until their their tick is called (heeding the timestamp stuff)
-
-- receive_message (returns boolean of success/ failure)
-  nodes call receive_message themselves (because this is essentially "sending the message")
-    -> put msg in individual node's data structure
-
-Message class
-- variants of control message (tell nodes about state of network)/ data message (actual message that 
-  needs to be transmitted)...
-i.e. "This is the state of the current network: nodes A and B are connected, etc"
-
-Network class
-- owns nodes (dictionary mapping node id to node object?)
-- tick method (calls tick on all nodes)
-
-Node class
-- nodes should have list of everyone it's connected to (directed/ undirected edges)
-- nodes send control messages between one another to know the internal state of other nodes
-    - recipients of control messages are up to the nodes themselves, and are dependent on each implementation of this class
-    (i.e. may be broadcasted or sent to destination...we decide)
-- has a position/ coordinate
-
-Notes from Cooper and Alex:
-- use outbox so a message can not be over-propagated during a single tick
-- since topology can change between ticks, nodes must verify they are still "connected" with receiver before sending
-    - this is a fair assumption, as it would be akin to a system that requires an ack for message receive. \
-- extend node class to handle different algorithms 
-
-Notes from George and Raymond:
-- TODO: implement some sort of "ack" packet that gets broadcasted to all nodes once a message has been delivered
-    - this prevents packets from still unnecessarily propagating through the network
-- we retain some memory per node of which messages it's already seen, preventing the dual message delivery issue
-    - i.e. A -> B; A -> C -> B
-'''
+### Description of args
+| Arg      | Description |
+| ----------- | ----------- |
+| `num_nodes`      | The number of nodes in the network.       |
+| `num_messages`   | The number of messages to be sent in the workload. Note that messages may end up never being delivered (i.e. in the case of disconnected networks).        |
+| `num_steps`   | The number of steps to run the simulation for.        |
+| `ttl`   | The number to set the TTL for messages. Has no effect on some routing algorithms.        |
+| `density`   | Density of the network topology (a float between 0 and 1, inclusive). Higher = more connectivity.        |
+| `volatility`   | Volatility of the network topology (a float between 0 and 1, inclusive). Higher = changes more frequently.        |
+| `topology`   | The topology class to be used. One of `'random'` (Random) or `'geo'` (Random Geospatial).        |
+| `alg`   | The routing algorithm for each node. One of `'random'` (Random), `'bfs'` (Naive BFS), `'bfs-ttl'` (BFS with TTL), `'bfs-ttl-early-split'` (BFS with TTL and Early Split), `'bfs-ttl-late-split'` (BFS with TTL and Late Split), '`bfs-loops'` (BFS with Looping).        |
+| `metric`   | The metric to use for plotting the network topology.        |
+| `graphics`   | Whether to display graphics.        |
+| `heatmap`   | Whether to run multiple trials and construct a heatmap.        |
+| `verbose`   | To display more complex metrics.        |
