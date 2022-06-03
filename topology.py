@@ -6,10 +6,10 @@ import matplotlib.animation as animation
 import networkx as nx
 import numpy as np
 
-# plt.rcParams["figure.figsize"] = [7.50, 3.50]
-plt.rcParams["figure.autolayout"] = True
+# plt.rcParams["figure.figsize"] = [1, 1]
+# plt.rcParams["figure.autolayout"] = True
 
-DISPLAY_DEBUG = False
+DISPLAY_DEBUG = True
 
 class Topology(ABC):
     '''Abstract network topology class.'''
@@ -69,14 +69,18 @@ class Topology(ABC):
         G.add_edges_from(edges)
         # save
         nx.draw_networkx(G, self.layout_pos)
+        
+        ax = plt.gca()
+        ax.set_xlim([0,1])
+        ax.set_ylim([0,1])
         plt.savefig(f"plots/{self.display_id}-{self.display_number}.png")
-        plt.clf()
         self.display_number += 1
         if DISPLAY_DEBUG:
             print(self.topology)
             print(f"Number of nodes: {self.num_nodes}")
             print(f"Edges: {edges}")
             plt.show()
+        plt.clf()
         return
 
 
@@ -152,3 +156,41 @@ class RandomGeoTopology(Topology):
         alternate_grid_locations = self.random_2d_grid_locations(self.num_nodes)
         self.grid_locations = (1 - self.volatility) * self.grid_locations + self.volatility * alternate_grid_locations
         self.topology = self.topology_from_grid_locations(self.grid_locations)
+
+    def display(self):
+        G = nx.Graph()
+        # add nodes
+        G.add_nodes_from(range(self.num_nodes))
+        # add all edges
+        edges = []
+        for i,row in enumerate(self.topology):
+            for j,val in enumerate(row):
+                # if i>j: break
+                if i==j: continue
+                if val: edges.append((i,j))
+        G.add_edges_from(edges)
+        # positions
+
+        pos = {}
+        for i,val in enumerate(self.grid_locations):
+            pos[i] = val
+        
+        # set scale
+        ax = plt.gca()
+        ax.set_xlim([0,1])
+        ax.set_ylim([0,1])
+        plt.grid(axis='y', linestyle='-')
+        # plt.grid(True)
+
+        # save
+        nx.draw_networkx(G, pos)
+        plt.savefig(f"plots/{self.display_id}-{self.display_number}.png")
+        self.display_number += 1
+        if DISPLAY_DEBUG:
+            print(f"Grid Location: {self.grid_locations}")
+            print(f"Topology: {self.topology}")
+            print(f"Number of nodes: {self.num_nodes}")
+            print(f"Edges: {edges}")
+            plt.show()
+        plt.clf()
+        return
