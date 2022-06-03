@@ -193,7 +193,7 @@ class NodeBFSWithTTLEarlySplit(Node):
             return
 
         nodes_sent = 0
-        random.shuffle(neighbors)
+        random.shuffle(neighbors) # randomly choose which fraction to send to
         for forward_node in neighbors:
             # don't forward packets to nodes that we've already visited
             if forward_node in packet.nodes_visited:
@@ -238,13 +238,14 @@ class NodeBFSWithTTLLateSplit(Node):
             return
 
         nodes_sent = 0
+        random.shuffle(neighbors)
         for forward_node in neighbors:
             # don't forward packets to nodes that we've already visited
             if forward_node in packet.nodes_visited:
                 continue
 
             # If the packet has been out for a while, send it to fewer neighbors
-            if packet.ttl / self.workload.num_messages <= nodes_sent / len(neighbors):
+            if nodes_sent ==0 or packet.ttl / self.workload.num_messages <= nodes_sent / len(neighbors):
                 # construct a new copy of a packet
                 # forward_packet = copy.copy(packet)
                 forward_packet = Packet(packet.message, packet.ttl)
@@ -254,6 +255,28 @@ class NodeBFSWithTTLLateSplit(Node):
                 yield (forward_packet, forward_node)
                 nodes_sent += 1
         return
+
+
+class NodeBFSLoops(Node):
+    def __init__(self, self_id, inbox: List[Packet] = [], outbox: List[Tuple[Packet, Node]] = []) -> None:
+        super().__init__(self_id)
+        self.inbox = inbox[:]  # messages sent to node
+        self.outbox = outbox[:]  # only put in outbox if "successful send"
+
+    def sending_algorithm(self, packet: Packet, neighbors: List[Node]) -> Iterator[Tuple[Node, Packet]]:
+        for forward_node in neighbors:
+            # don't forward packets to nodes that we've already visited
+            if forward_node in packet.nodes_visited:
+                continue
+            # construct a new copy of a packet
+            # forward_packet = copy.copy(packet)
+            forward_packet = Packet(packet.message, packet.ttl)
+            forward_packet.nodes_visited = packet.nodes_visited
+            forward_packet.message.total_cost += 1
+            forward_packet.nodes_visited.append(self.self_id)
+            yield (forward_packet, forward_node)
+        return
+
 
 # TODO distance routing
 # TODO distance routing with some splitting threshold
