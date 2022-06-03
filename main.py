@@ -30,7 +30,8 @@ NODE_ALGORITHM_CLASS_DICT = {
     'bfs': node.NodeNaiveBFS,
     'bfs-ttl': node.NodeBFSWithTTL,
     'bfs-ttl-early-split': node.NodeBFSWithTTLEarlySplit,
-    'bfs-ttl-late-split': node.NodeBFSWithTTLLateSplit
+    'bfs-ttl-late-split': node.NodeBFSWithTTLLateSplit,
+    'bfs-loops': node.NodeBFSLoops
 }
 
 def run_one_trial(args):
