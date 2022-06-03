@@ -1,10 +1,12 @@
 A Python network simulator to design, benchmark, and visualize routing algorithms for dynamic geospatial networks.
 
-![fksiout](https://user-images.githubusercontent.com/26047273/171828206-20ec5a01-0bc1-4352-867a-b6ea3c7ea8bc.gif)
-Geospatial Topology Visualization
+<img src="https://user-images.githubusercontent.com/26047273/171828206-20ec5a01-0bc1-4352-867a-b6ea3c7ea8bc.gif" width="320" height="240" />
 
+*Random Geospatial Topology Visualization*
 
+<img src="https://user-images.githubusercontent.com/26047273/171829529-28e7b5af-034a-4f91-8af9-df20ae9d0d5d.gif" width="320" height="240" />
 
+*Random Topology Visualization*
 
 ## Getting Started
 To install the Python library dependencies, run:
