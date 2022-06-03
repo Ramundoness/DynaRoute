@@ -75,7 +75,7 @@ class SimpleArgumentParser(Tap):
     topology: str = 'random'  # Which topology class to use (key in TOPOLOGY_CLASS_DICT)
     alg: str = 'random'  # Which routing algorithm for each node should we use?
 
-    metric: list[str] = ['fraction_delivered']  # Which metri
+    metric: list = ['fraction_delivered']  # Which metric
 
     graphics: bool = False # whether to display graphics
 

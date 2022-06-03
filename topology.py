@@ -40,7 +40,8 @@ class Topology(ABC):
         for i in range(self.num_nodes):
             for j in range(self.num_nodes):
                 G.add_edge(i,j)
-        self.layout_pos = nx.random_layout(G)
+        self.layout_pos = nx.spring_layout(G)
+        print(self.layout_pos)
         # self.fig = plt.figure() 
         self.display_number = 0
         self.display_id = datetime.now()
@@ -71,8 +72,8 @@ class Topology(ABC):
         nx.draw_networkx(G, self.layout_pos)
         
         ax = plt.gca()
-        ax.set_xlim([0,1])
-        ax.set_ylim([0,1])
+        ax.set_xlim([-1.1,1.1])
+        ax.set_ylim([-1.1,1.1])
         plt.savefig(f"plots/{self.display_id}-{self.display_number}.png")
         self.display_number += 1
         if DISPLAY_DEBUG:
@@ -157,7 +158,7 @@ class RandomGeoTopology(Topology):
         # self.grid_locations = (1) * self.grid_locations + self.volatility * alternate_grid_locations
         alternate_grid_locations -= 0.5
         self.grid_locations = self.grid_locations + self.volatility * (alternate_grid_locations / np.linalg.norm(alternate_grid_locations, ord=2, axis=-1, keepdims=True))
-        # reflecting across 0 & 1 boundaries to prevent run-away nodes
+        # reflecting across 0 & 1 boundaries to prevent nodes escaping the 
         self.grid_locations -= 2 * np.maximum(self.grid_locations-1, 0)
         self.grid_locations -= 2 * np.minimum(self.grid_locations, 0)
         
@@ -185,7 +186,6 @@ class RandomGeoTopology(Topology):
         ax = plt.gca()
         ax.set_xlim([0,1])
         ax.set_ylim([0,1])
-        plt.grid(axis='y', linestyle='-')
         # plt.grid(True)
 
         # save
