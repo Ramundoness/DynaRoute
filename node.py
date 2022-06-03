@@ -193,7 +193,7 @@ class NodeBFSWithTTLEarlySplit(Node):
             return
 
         nodes_sent = 0
-        random.shuffle(neighbors)
+        random.shuffle(neighbors) # randomly choose which fraction to send to
         for forward_node in neighbors:
             # don't forward packets to nodes that we've already visited
             if forward_node in packet.nodes_visited:
@@ -238,13 +238,14 @@ class NodeBFSWithTTLLateSplit(Node):
             return
 
         nodes_sent = 0
+        random.shuffle(neighbors)
         for forward_node in neighbors:
             # don't forward packets to nodes that we've already visited
             if forward_node in packet.nodes_visited:
                 continue
 
             # If the packet has been out for a while, send it to fewer neighbors
-            if packet.ttl / self.workload.num_messages <= nodes_sent / len(neighbors):
+            if nodes_sent ==0 or packet.ttl / self.workload.num_messages <= nodes_sent / len(neighbors):
                 # construct a new copy of a packet
                 # forward_packet = copy.copy(packet)
                 forward_packet = Packet(packet.message, packet.ttl)
