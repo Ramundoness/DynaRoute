@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from textwrap import wrap
 
 
 from network_simulator import NetworkSimulator
@@ -114,6 +115,6 @@ if __name__ == "__main__":
             sns.heatmap(pivot)
         plt.legend()
         title = f'metric={metric}, steps={args.num_steps}, alg={args.alg}, num_nodes={args.num_nodes}, num_messages={args.num_messages}, topology={args.topology}, n={n}, b={b}'
-        plt.title(title)
+        plt.title("\n".join(wrap(title, 60)))
         plt.savefig(f'{title}.png')
         plt.show()
