@@ -1,7 +1,15 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from random import random
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import networkx as nx
 import numpy as np
+
+# plt.rcParams["figure.figsize"] = [7.50, 3.50]
+plt.rcParams["figure.autolayout"] = True
+
+DISPLAY_DEBUG = False
 
 class Topology(ABC):
     '''Abstract network topology class.'''
@@ -21,11 +29,22 @@ class Topology(ABC):
             volatility: float in [0,1] that controls how often the connection changes 
                 between any two nodes. 0 = no change, 1 = maximum change
         '''
-        self.num_nodes = num_nodes
-        self.density = density
-        self.volatility = volatility
-        self.topology = self.initialize()
-    
+        self.num_nodes = num_nodes 
+        self.density = density 
+        self.volatility = volatility 
+        self.topology = self.initialize() 
+
+        # consistent layout for non-geographic based topologys
+        G = nx.Graph() 
+        G.add_nodes_from(self.topology[0]) 
+        for i in range(self.num_nodes):
+            for j in range(self.num_nodes):
+                G.add_edge(i,j)
+        self.layout_pos = nx.random_layout(G)
+        # self.fig = plt.figure() 
+        self.display_number = 0
+        self.display_id = datetime.now()
+
     @abstractmethod
     def initialize():
         '''Generate the initial network topology.'''
@@ -38,14 +57,26 @@ class Topology(ABC):
 
     def display(self):
         G = nx.Graph()
-        G.add_nodes_from(self.topology[0])
+        # add nodes
+        G.add_nodes_from(range(self.num_nodes))
+        # add all edges
         edges = []
         for i,row in enumerate(self.topology):
             for j,val in enumerate(row):
-                if i>j: break
+                # if i>j: break
+                if i==j: continue
                 if val: edges.append((i,j))
         G.add_edges_from(edges)
-        nx.multipartite_layout(G)
+        # save
+        nx.draw_networkx(G, self.layout_pos)
+        plt.savefig(f"plots/{self.display_id}-{self.display_number}.png")
+        plt.clf()
+        self.display_number += 1
+        if DISPLAY_DEBUG:
+            print(self.topology)
+            print(f"Number of nodes: {self.num_nodes}")
+            print(f"Edges: {edges}")
+            plt.show()
         return
 
 

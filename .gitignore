@@ -1,2 +1,4 @@
 *.pyc
 metric=*
+plots/*.png
+.DS_Store

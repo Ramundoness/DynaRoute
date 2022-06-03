@@ -1,4 +1,6 @@
 
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from time import sleep
 from typing import List, Type
 
@@ -7,8 +9,6 @@ from workload import Workload
 from message import Message
 from packet import Packet
 from topology import Topology  # choose your topology
-
-GRAPHICS_PAUSE = 1
 
 class NetworkSimulator:
     '''Implements as simple simulator for a network with changing topology.
@@ -39,20 +39,22 @@ class NetworkSimulator:
             self.nodelist[message.start].inbox.append(packet)
         
     def run_workload(self, max_steps=100, graphics: bool=False):
-        print(f'Running workload for {max_steps} steps.')
+        print(f'Running workload for {max_steps} steps.') 
+        # if graphics: 
+        #     print('Graphics enabled!')
+        #     fig = plt.figure() 
+        #     ani = animation.FuncAnimation(fig, self.topology.display, interval=100, fargs=(fig,plt)) 
+        #     plt.show() 
         for _ in range(max_steps):
             # perform one step on network 
             self.run_one_network_step()
-            if graphics: 
-                self.display() 
-                sleep(GRAPHICS_PAUSE)
+                # if graphics: 
+                #     self.display() 
             # topology update
             self.topology.step()
             if graphics: 
                 self.topology.display()
-                self.display() # redo display after topology display
-                print("UH OH I SHOULD NOT BE RUNNING! ALEX FIX THIS")
-                sleep(GRAPHICS_PAUSE)
+            #       # self.display() # redo display after topology display
 
     def display(self): 
         pass
