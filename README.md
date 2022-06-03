@@ -3,7 +3,7 @@ A Python network simulator to design, benchmark, and visualize routing algorithm
 ## Getting Started
 To install the Python library dependencies, run:
 ```
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 ```
 Note that we are using Python v3.9 (other versions may be unsupported).
 
@@ -44,6 +44,6 @@ python3 main.py --num_nodes=50 --density=0.1 --volatility=0.2
 | `topology`   | The topology class to be used. One of `'random'` (Random) or `'geo'` (Random Geospatial).        |
 | `alg`   | The routing algorithm for each node. One of `'random'` (Random), `'bfs'` (Naive BFS), `'bfs-ttl'` (BFS with TTL), `'bfs-ttl-early-split'` (BFS with TTL and Early Split), `'bfs-ttl-late-split'` (BFS with TTL and Late Split), '`bfs-loops'` (BFS with Looping).        |
 | `metric`   | The metric to use for plotting the network topology.        |
-| `graphics`   | Whether to display graphics.        |
-| `heatmap`   | Whether to run multiple trials and construct a heatmap.        |
-| `verbose`   | To display more complex metrics.        |
+| `graphics`   | Whether to display a visualization of the network topology.        |
+| `heatmap`   | Whether to run multiple trials and construct a heatmap of density & the provided metric (i.e. `'fraction_delivered'`).        |
+| `verbose`   | Whether to display more complex metrics.        |
