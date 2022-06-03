@@ -29,14 +29,15 @@ NODE_ALGORITHM_CLASS_DICT = {
     'random': node.RandomForwardNode,
     'bfs': node.NodeNaiveBFS,
     'bfs-ttl': node.NodeBFSWithTTL,
-    'bfs-ttl-early-split': node.NodeBFSWithTTLEarlySplit
+    'bfs-ttl-early-split': node.NodeBFSWithTTLEarlySplit,
+    'bfs-ttl-late-split': node.NodeBFSWithTTLLateSplit
 }
 
 def run_one_trial(args):
     # TODO: remove for final
     # set random seeds for deterministic outputs
-    random.seed(a=43)
-    np.random.seed(seed=43)
+    # random.seed(a=43)
+    # np.random.seed(seed=43)
 
     num_nodes = args.num_nodes
     num_messages = args.num_messages
@@ -72,7 +73,7 @@ class SimpleArgumentParser(Tap):
     topology: str = 'random'  # Which topology class to use (key in TOPOLOGY_CLASS_DICT)
     alg: str = 'random'  # Which routing algorithm for each node should we use?
 
-    metric = 'fraction_delivered'  # Which metri
+    metric: list[str] = ['fraction_delivered']  # Which metri
 
     graphics: bool = False # whether to display graphics
 
@@ -99,17 +100,19 @@ if __name__ == "__main__":
             stats['density'] = round(density, 4)
             stats['volatility'] = round(volatility, 4)
             results.append(stats)
-    df = pd.DataFrame(results)
-    plt.figure(figsize=(10, 8))
-    sns.set_context("notebook")
-    pivot = df.pivot("density", "volatility", args.metric)
-    if args.metric == 'fraction_delivered':
-        # Lock these to [0, 1] for ease of comparison
-        sns.heatmap(pivot, vmin=0, vmax=1)
-    else:
-        sns.heatmap(pivot)
-    plt.legend()
-    title = f'metric={args.metric}, steps={args.num_steps}, alg={args.alg}, topology={args.topology}, n={n}, b={b}'
-    plt.title(title)
-    plt.savefig(f'{title}.png')
-    plt.show()
+
+    for metric in args.metric:
+        df = pd.DataFrame(results)
+        plt.figure(figsize=(10, 8))
+        sns.set_context("notebook")
+        pivot = df.pivot("density", "volatility", metric)
+        if metric == 'fraction_delivered':
+            # Lock these to [0, 1] for ease of comparison
+            sns.heatmap(pivot, vmin=0, vmax=1)
+        else:
+            sns.heatmap(pivot)
+        plt.legend()
+        title = f'metric={metric}, steps={args.num_steps}, alg={args.alg}, num_nodes={args.num_nodes}, num_messages={args.num_messages}, topology={args.topology}, n={n}, b={b}'
+        plt.title(title)
+        plt.savefig(f'{title}.png')
+        plt.show()
