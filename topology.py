@@ -41,7 +41,7 @@ class Topology(ABC):
             for j in range(self.num_nodes):
                 G.add_edge(i,j)
         self.layout_pos = nx.spring_layout(G)
-        print(self.layout_pos)
+
         # self.fig = plt.figure() 
         self.display_number = 0
         self.display_id = datetime.now()
@@ -158,7 +158,7 @@ class RandomGeoTopology(Topology):
         # self.grid_locations = (1) * self.grid_locations + self.volatility * alternate_grid_locations
         alternate_grid_locations -= 0.5
         self.grid_locations = self.grid_locations + self.volatility * (alternate_grid_locations / np.linalg.norm(alternate_grid_locations, ord=2, axis=-1, keepdims=True))
-        # reflecting across 0 & 1 boundaries to prevent nodes escaping the 
+        # reflecting across 0 & 1 boundaries to prevent nodes escaping the borders
         self.grid_locations -= 2 * np.maximum(self.grid_locations-1, 0)
         self.grid_locations -= 2 * np.minimum(self.grid_locations, 0)
         

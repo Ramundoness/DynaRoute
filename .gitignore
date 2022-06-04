@@ -2,3 +2,4 @@
 metric=*
 plots/*.png
 .DS_Store
+gifs/*.gif
