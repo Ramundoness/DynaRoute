@@ -13,7 +13,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from textwrap import wrap
 
-
 from network_simulator import NetworkSimulator
 import node
 from topology import RandomTopology, RandomGeoTopology
@@ -36,8 +35,14 @@ NODE_ALGORITHM_CLASS_DICT = {
 }
 
 def run_one_trial(args):
-    # TODO: remove for final
-    # set random seeds for deterministic outputs
+    '''
+    Function: run_one_trial
+        Runs one trial (i.e. simulation) with the provided args (helpful when trying to quickly modify
+        args and seeing their results)
+
+    Returns: dictionary mapping of stats for printing
+    '''
+    # Set seeds for debugging
     # random.seed(a=43)
     # np.random.seed(seed=43)
 
@@ -61,26 +66,28 @@ def run_one_trial(args):
     return simulator.compute_workload_stats()
 
 
-
 class SimpleArgumentParser(Tap):
+    '''
+    SimpleArgumentParser class. Helpful Python argument parser.
+    '''
     num_nodes: int = 100  # Number of nodes in the network
     num_messages: int = 1000  # Number of messages in the workload
     num_steps: int = 250  # Number of steps to run the simulation for
-    ttl: int = None # ttl for a message. Has no effect on some routing algorithms
+    ttl: int = None # Number to set the TTL for messages. Has no effect on some routing algorithms
 
     # Currently this is overwritten
     density: float = 0.5  # Density of the network topology. Higher = more connectivity.
     volatility: float = 0.5  # Volatility of the network topology. Higher = changes more frequently.
 
-    topology: str = 'random'  # Which topology class to use (key in TOPOLOGY_CLASS_DICT)
-    alg: str = 'random'  # Which routing algorithm for each node should we use?
+    topology: str = 'random'  # The topology class to be use (key in TOPOLOGY_CLASS_DICT)
+    alg: str = 'random'  # The routing algorithm for each node
 
-    metric: list = ['fraction_delivered']  # Which metric
+    metric: list = ['fraction_delivered']  # Which metric to use for the heatmap
 
-    graphics: bool = False # whether to display graphics
+    graphics: bool = False # whether to display a visualization of the network topology
 
     heatmap: bool = False # whether to run multiple trials and construct a heatmap
-    verbose: bool = False # display more complex metrics
+    verbose: bool = False # whether to display more complex metrics
 
 
 if __name__ == "__main__":
