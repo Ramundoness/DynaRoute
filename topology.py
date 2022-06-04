@@ -41,7 +41,7 @@ class Topology(ABC):
             for j in range(self.num_nodes):
                 G.add_edge(i,j)
         self.layout_pos = nx.spring_layout(G)
-        print(self.layout_pos)
+        # print(self.layout_pos)
         # self.fig = plt.figure() 
         self.display_number = 0
         self.display_id = datetime.now()
