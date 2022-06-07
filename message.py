@@ -1,12 +1,13 @@
 class Message:
+    '''
+    Message class. Contains the raw information that needs to be passed from the start node to the
+        end node. Currently, the messages themselves contain no real valuable information (only routing
+        deetails and cost metrics).
+    '''
     def __init__(self, id, start_id, destination_id) -> None:
-        self.id = id
-        self.start = start_id
-        self.destination_id = destination_id
-        self.total_cost = 0
-        self.delivered = False
-        self.num_packets = 0    # number of packets per message
-
-        # can store other things like metrics
-        # figure out what total cost is work done by network or number of steps taken for message to its destination
-        # congestion vs latency
+        self.id = id        # Integer id of the message
+        self.start = start_id       # Integer id of the start node
+        self.destination_id = destination_id    # Integer id of the destination node
+        self.total_cost = 0     # Cumulative sum of "hops" for this message to be delivered
+        self.delivered = False     # Whether the message has been delivered or not
+        self.num_packets = 0    # Number of packets per message

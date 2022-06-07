@@ -1,3 +1,5 @@
+# DynaRoute
+
 A Python network simulator to design, benchmark, and visualize routing algorithms for dynamic geospatial networks.
 
 <img src="https://user-images.githubusercontent.com/26047273/171828206-20ec5a01-0bc1-4352-867a-b6ea3c7ea8bc.gif" width="320" height="240" />

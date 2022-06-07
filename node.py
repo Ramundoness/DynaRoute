@@ -8,42 +8,42 @@ from packet import Packet
 from topology import Topology
 from workload import Workload
 
-import copy
-
 class Node(ABC):
-    '''Node class. Handles receiving and sending of messages for individual nodes.
-        Extend this class to test forwarding algorithms
-
+    '''
+    Node class. Handles receiving and sending of messages for individual nodes.
+        Extend this class to test forwarding algorithms.
     '''
     def __init__(self, self_id) -> None:
         # self.nodelist = nodelist
         self.inbox  = []     #  messages sent to node
         self.outbox = []    #  only put in outbox if "successful send"
-        self.self_id = self_id  #  `self_id` is position of node in parent NetworkSimulator's nodelist. Used for identification  
-        self.avg_num_packets_inbox = 0
-        self.steps = 0
+        self.self_id = self_id      #  `self_id` is position of node in parent NetworkSimulator's nodelist. Used for identification  
+        self.avg_num_packets_inbox = 0  # used to calculate the average inbox load
+        self.steps = 0      # used to calculate the average inbox load (keeps track of number of timesteps)
 
-    """
+    '''
     Function: set_workload
-        Allows Nodes to retreive information about the current workload running
+        Allows nodes to retreive information about the current workload running.
         For instance, nodes may wish to set different parameters based on the
         size of the current network
-    """
+    '''
     def set_workload(self, workload: Workload):
         self.workload = workload
 
-    """
+    '''
     Function: handle_packet
         Wrapper to handle node forwarding packets to other nodes.
 
-        - checks if self is destination
-            - returns -1
+        - Checks if self is destination (and terminates if so)
         - Uses topology of network to find who node can talk to (simulating node querying its reachable network)
-        - Let's sending_algorithm handle routing and cost calculations
-        - places (msg, next_node) pairs into outbox
+        - Allows sending_algorithm handle routing and cost calculations
+        - Places (next_packet, next_node) pairs into outbox
 
-        returns number of forwards. >0 if forwards occur. 0 if no forwards occur. -1 if self is destination
-    """
+        Returns number of forwards (i.e. packet sending/ forwarding). 
+            >0 if forwards occur. 
+            0 if no forwards occur. 
+            -1 if self is destination.
+    '''
     def handle_packet(self, packet: Packet, topology: Topology) -> int:
         # prevent packets from looping
         packet.nodes_visited.append(self)
@@ -69,24 +69,26 @@ class Node(ABC):
         # let network_simulator handle message deletion from inbox & outbox
 
 
-    """
+    '''
     Function: sending_algorithm
-        - this functionality should be modified in classes that extend Node to test different sending algorithms
+        Governs the packet forwarding algorithm between nodes. 
+        Goals:
+            # - Decide which node to send the message to
+            # - Retry after failed sends
+            # - Compute the cost of each send
 
-        yields (node, msg) pairs to send
-        OR returns a list of (node, msg) pairs
-
-        goal:
-            # - Deciding which node to send the message to
-            # - Retries after failed sends
-            # - Computing the cost of each send
-    """
+        Yields (node, msg) pairs to send OR returns a list of (node, msg) pairs.
+    '''
     @abstractmethod
-    def sending_algorithm(self, message, neighbors):
+    def sending_algorithm(self, packet, neighbors):
         pass
 
 
 class NodeNaiveBFS(Node):
+    '''
+    NodeNaiveBFS class (extends Node class). Forwards a packet to every neighbor.
+        - Has some optimizations with keeping a past history of messages the node has seen.
+    '''
     def __init__(self, self_id, inbox: List[Packet] = [], outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
         self.inbox = inbox[:]  # messages sent to node
@@ -115,6 +117,10 @@ class NodeNaiveBFS(Node):
 
 
 class RandomForwardNode(Node):
+    '''
+    RandomForwardNode class (extends Node class). Randomly forwards one packet to a single one of the node's
+        neighbors.
+    '''
     def __init__(self, self_id):
         super().__init__(self_id)
 
@@ -122,7 +128,7 @@ class RandomForwardNode(Node):
         if len(neighbors) == 0:
             return
         else:
-            # TODO: try forwarding the node to more than neighbor
+            # TODO: Try forwarding the node to more than neighbor
             # i.e. k=2 or k=3
             forward_node = random.choice(neighbors)
             packet.message.total_cost += 1
@@ -130,12 +136,12 @@ class RandomForwardNode(Node):
             yield (packet, forward_node)
         return
 
-"""
-This is a copy of the NodeNaiveBFS algorithm but with a TTL added to each packet
-Every node decrements the TTL by 1. If the TTL reaches 0, the packet is dropped
-This prevents packets from being routed forever.
-"""
 class NodeBFSWithTTL(Node):
+    '''
+    NodeBFSWithTTL class (extends Node class). Copy of the NodeNaiveBFS algorithm but with a TTL added to each packet
+        Every node decrements the TTL by 1. If the TTL reaches 0, the packet is dropped.
+        This prevents packets from being routed forever.
+    '''
     def __init__(self, self_id, inbox: List[Packet] = [], outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
         self.inbox = inbox[:]  # messages sent to node
@@ -169,6 +175,11 @@ class NodeBFSWithTTL(Node):
 
 
 class NodeBFSWithTTLEarlySplit(Node):
+    '''
+    NodeBFSWithTTLEarlySplit class (extends Node class). Optimizes NodeBFSWithTTL by duplicating packets less
+        often. Forwards packets it receives as a fraction of (current TTL of the packet / starting TTL of packets).
+        Intuitively, this means that packets are duplicated more often towards the start of their journey.
+    '''
     def __init__(self,
                  self_id,
                  workload: Workload = None, # These nodes (and maybe all nodes) need info from the workload
@@ -212,8 +223,12 @@ class NodeBFSWithTTLEarlySplit(Node):
         return
 
 
-# TODO BFS with ttl and splitting late
 class NodeBFSWithTTLLateSplit(Node):
+    '''
+    NodeBFSWithTTLLateSplit class (extends Node class). Optimizes NodeBFSWithTTL by duplicating packets less
+        often. Forwards packets it receives as a fraction of (starting TTL of packets / current TTL of the packet).
+        Intuitively, this means that packets are duplicated more often towards the start of their journey.
+    '''
     def __init__(self,
                  self_id,
                  workload: Workload = None, # These nodes (and maybe all nodes) need info from the workload
@@ -223,7 +238,7 @@ class NodeBFSWithTTLLateSplit(Node):
         self.inbox = inbox[:]  # messages sent to node
         self.outbox = outbox[:]  # only put in outbox if "successful send"
         self.seen_messages = set() # previously seen messages
-        self.workload = workload
+        self.workload = workload # workload of messages to be delivered
 
     def sending_algorithm(self, packet: Packet, neighbors: List[Node]) -> Iterator[Tuple[Node, Packet]]:
         # maintain a memory of past messages the node has seen to prevent a packet from going to 
@@ -258,6 +273,10 @@ class NodeBFSWithTTLLateSplit(Node):
 
 
 class NodeBFSLoops(Node):
+    '''
+    NodeBFSLoops class (extends Node class). Nodes will not forward on packets containing messages that they
+        have already seen. Allows for a message to be forwarded through the same node multiple times.
+    '''
     def __init__(self, self_id, inbox: List[Packet] = [], outbox: List[Tuple[Packet, Node]] = []) -> None:
         super().__init__(self_id)
         self.inbox = inbox[:]  # messages sent to node
@@ -276,9 +295,3 @@ class NodeBFSLoops(Node):
             forward_packet.nodes_visited.append(self.self_id)
             yield (forward_packet, forward_node)
         return
-
-
-# TODO distance routing
-# TODO distance routing with some splitting threshold
-
-# TODO nodes try to build routing table?
